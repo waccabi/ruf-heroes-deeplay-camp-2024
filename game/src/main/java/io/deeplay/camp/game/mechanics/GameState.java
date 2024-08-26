@@ -69,7 +69,7 @@ public class GameState {
     if (countRound == 0) {
       winner = winnerOrDraw();
       gameStage = GameStage.ENDED;
-      logger.atInfo().log("Result {}, game is {}", winner, gameStage);
+      //logger.atInfo().log("Result {}, game is {}", winner, gameStage);
     }
   }
 
@@ -253,37 +253,37 @@ public class GameState {
     int x = placement.getColumns();
     int y = placement.getRows();
 
-    logger.atInfo().log(
+    /*logger.atInfo().log(
         "Checking placement for unit {} at ({}, {}) {}",
         placement.getUnit(),
         x,
         y,
-        placement.getUnit().getPlayerType());
+        placement.getUnit().getPlayerType());*/
     if (placement.getUnit().getPlayerType() != getCurrentPlayer()) {
-      logger.error("Not your turn");
+      //logger.error("Not your turn");
       throw new GameException(ErrorCode.NOT_YOUR_TURN);
     }
     if (x > Board.COLUMNS || x < 0) {
-      logger.atError().log("Placement coordinates ({}, {}) are out of board bounds.", x, y);
+      //logger.atError().log("Placement coordinates ({}, {}) are out of board bounds.", x, y);
       throw new GameException(ErrorCode.PLACEMENT_INCORRECT);
     }
     if (y > Board.ROWS || y < 0) {
-      logger.atError().log("Placement coordinates ({}, {}) are out of board bounds.", x, y);
+      //logger.atError().log("Placement coordinates ({}, {}) are out of board bounds.", x, y);
       throw new GameException(ErrorCode.PLACEMENT_INCORRECT);
     }
     // Проверка на сторону юнита
     if (placement.getUnit().getPlayerType() == PlayerType.FIRST_PLAYER) {
       if (y < (Board.ROWS / 2)) {
-        logger.atInfo().log("Placement valid for First Player at ({}, {}).", x, y);
+        //logger.atInfo().log("Placement valid for First Player at ({}, {}).", x, y);
       } else {
-        logger.atError().log("Placement invalid for First Player at ({}, {}).", x, y);
+        //logger.atError().log("Placement invalid for First Player at ({}, {}).", x, y);
         throw new GameException(ErrorCode.PLACEMENT_INCORRECT);
       }
     } else {
       if (y > ((Board.ROWS / 2) - 1) && y < Board.ROWS) {
-        logger.atInfo().log("Placement valid for Second Player at ({}, {}).", x, y);
+        //logger.atInfo().log("Placement valid for Second Player at ({}, {}).", x, y);
       } else {
-        logger.atError().log("Placement invalid for Second Player at ({}, {}).", x, y);
+        //logger.atError().log("Placement invalid for Second Player at ({}, {}).", x, y);
         throw new GameException(ErrorCode.PLACEMENT_INCORRECT);
       }
     }
@@ -445,12 +445,12 @@ public class GameState {
     if (getCurrentBoard().enumerateUnits(0, Board.ROWS / 2).size() == 0) {
       winner = PlayerType.SECOND_PLAYER;
       gameStage = GameStage.ENDED;
-      logger.atInfo().log("Result {}, is {}", winner, gameStage);
+      //logger.atInfo().log("Result {}, is {}", winner, gameStage);
     }
     if (getCurrentBoard().enumerateUnits(Board.ROWS / 2, Board.ROWS).size() == 0) {
       winner = PlayerType.FIRST_PLAYER;
       gameStage = GameStage.ENDED;
-      logger.atInfo().log("Result {}, is {}", winner, gameStage);
+      //logger.atInfo().log("Result {}, is {}", winner, gameStage);
     }
   }
 

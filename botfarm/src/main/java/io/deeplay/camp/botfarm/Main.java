@@ -1,13 +1,12 @@
 package io.deeplay.camp.botfarm;
 
 
-import io.deeplay.camp.botfarm.bots.MinMaxBot;
+import io.deeplay.camp.botfarm.bots.Bot;
+import io.deeplay.camp.botfarm.bots.MinMaxBotAB;
+import io.deeplay.camp.botfarm.bots.MinMaxBotClassic;
 import io.deeplay.camp.botfarm.bots.RandomBot;
-import io.deeplay.camp.game.exceptions.GameException;
 import io.deeplay.camp.game.mechanics.PlayerType;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -23,12 +22,10 @@ public class Main {
 
     deleteFilesForPathByPrefix(path, "resultgame");
 
-    MinMaxBot bot1 = new MinMaxBot(3, PlayerType.FIRST_PLAYER);
-    // RandomBot bot1 = new RandomBot();
-    // MinMaxBot bot2 = new MinMaxBot(3, PlayerType.SECOND_PLAYER);
-    RandomBot bot2 = new RandomBot();
+    Bot bot1 = new MinMaxBotClassic(1);
+    Bot bot2 = new RandomBot();
     for(int i = 0; i<1;i++){
-      BotFight fight = new BotFight(bot1 , bot2, 100, true);
+      BotFight fight = new BotFight(bot1 , bot2, 10, true);
     }
   }
 

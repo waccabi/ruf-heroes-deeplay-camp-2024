@@ -59,6 +59,10 @@ public class Board {
     return units[x][y];
   }
 
+  public Unit getUnitByPosition(Position p){
+    return getUnit(p.x(),p.y());
+  }
+
   private boolean isFullPart(int startRow, int endRow) {
     for (int i = startRow; i < endRow; i++) {
       for (int j = 0; j < Board.COLUMNS; j++) {
@@ -98,6 +102,14 @@ public class Board {
   public boolean isAllMovedSecondPlayerPart() {
     return isAllMovedPart(Board.ROWS / 2, Board.ROWS);
   }
+
+  public List<Position> firstPlayerUnits (){
+    return enumerateUnits(0,2);
+  }
+  public List<Position> secondPlayerUnits(){
+    return enumerateUnits(2,4);
+  }
+
 
   public List<Position> enumerateUnits(int startRow, int endRow) {
     List<Position> unitPositions = new ArrayList<>();

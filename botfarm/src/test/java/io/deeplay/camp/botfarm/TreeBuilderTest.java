@@ -1,61 +1,131 @@
 package io.deeplay.camp.botfarm;
 
+import io.deeplay.camp.botfarm.bots.Bot;
+import io.deeplay.camp.botfarm.bots.BotGames;
+import io.deeplay.camp.botfarm.bots.MinMaxBotAB;
+import io.deeplay.camp.botfarm.bots.RandomBot;
 import io.deeplay.camp.botfarm.bots.max_MinMax.ResultFunction;
-import io.deeplay.camp.botfarm.bots.max_MinMax.Stats;
 import io.deeplay.camp.botfarm.bots.max_MinMax.TreeBuilder;
+import io.deeplay.camp.game.Game;
+import io.deeplay.camp.game.events.ChangePlayerEvent;
+import io.deeplay.camp.game.events.GiveUpEvent;
+import io.deeplay.camp.game.events.MakeMoveEvent;
+import io.deeplay.camp.game.exceptions.GameException;
+import io.deeplay.camp.game.mechanics.GameStage;
 import io.deeplay.camp.game.mechanics.GameState;
 import io.deeplay.camp.game.mechanics.PlayerType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static io.deeplay.camp.botfarm.bots.max_MinMax.TreeBuilder.buildGameTree;
+
 public class TreeBuilderTest {
-  private GameState gameState;
+  Game game;
+  Bot botFirst;
+  Bot botSecond;
+  GameState gameState;
+  static String path =
+          "C:\\Users\\Maksim\\IdeaProjects\\ruf-heroes-deeplay-camp-2024\\botfarm\\src\\main\\java\\io\\deeplay\\camp\\botfarm";
 
   @BeforeEach
-  public void setUp() {
-    gameState = new GameState();
-    gameState.setDefaultPlacement();
-  }
-
-  @Test
-  void testTreeBuilder() {
-    Stats stats = new Stats();
-    TreeBuilder.buildGameTree(gameState, stats);
-    Assertions.assertEquals(stats.getNumTerminalNodes(), 17);
+  public void setUp() throws IOException {
+    game = new Game();
+    this.gameState = game.getGameState();
   }
 
   @Test
   void testTreeBuilderMaxDepth() {
-    Stats stats = new Stats(2);
+    gameState.setDefaultPlacement();
     // first
-    gameState.getBoard().getUnit(0, 0).setCurrentHp(0);
-    gameState.getBoard().getUnit(1, 0).setCurrentHp(0);
-    gameState.getBoard().getUnit(2, 0).setCurrentHp(0);
-    gameState.getBoard().getUnit(0, 1).setCurrentHp(0);
-    gameState.getBoard().getUnit(2, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 1).setAccuracy(100);
+    game.getGameState().getBoard().getUnit(1, 1).setCurrentHp(100);
     // second
-    gameState.getBoard().getUnit(0, 2).setCurrentHp(0);
-    gameState.getBoard().getUnit(2, 2).setCurrentHp(0);
-    gameState.getBoard().getUnit(0, 3).setCurrentHp(0);
-    gameState.getBoard().getUnit(1, 3).setCurrentHp(0);
-    gameState.getBoard().getUnit(2, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 2).setCurrentHp(5);
+    game.getGameState().getBoard().getUnit(0, 2).setAccuracy(-100);
+    game.getGameState().getBoard().getUnit(2, 2).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 2).setCurrentHp(10);
+    game.getGameState().getBoard().getUnit(1, 2).setAccuracy(-100);
 
-    TreeBuilder.buildGameTree(gameState, stats);
-    Assertions.assertEquals(stats.getNumTerminalNodes(), 1);
-    Assertions.assertEquals(stats.getNumNodes(), 3);
-
+    TreeBuilder.TreeStats treeStats =  TreeBuilder.buildGameTree(game.getGameState());
+    Assertions.assertEquals(treeStats.getMaxDepth(),5);
+    Assertions.assertEquals(treeStats.getNumTerminalNodes(),5);
+    Assertions.assertEquals(treeStats.getNumNodes(),21);
   }
 
   @Test
-  void testResultFunction() {
-    ResultFunction resultFunction = new ResultFunction();
-    double a = resultFunction.getUtility(gameState, PlayerType.FIRST_PLAYER);
-    Assertions.assertEquals(a, 0);
+  void testTreeBuilderMaxDepth1() {
+    gameState.setDefaultPlacement();
+    // first
+    game.getGameState().getBoard().getUnit(0, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 1).setAccuracy(100);
+    game.getGameState().getBoard().getUnit(1, 1).setCurrentHp(100);
+    // second
+    game.getGameState().getBoard().getUnit(0, 2).setCurrentHp(5);
+    game.getGameState().getBoard().getUnit(0, 2).setAccuracy(-100);
+    game.getGameState().getBoard().getUnit(2, 2).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 2).setCurrentHp(5);
+    game.getGameState().getBoard().getUnit(1, 2).setAccuracy(-100);
+
+
+    TreeBuilder.TreeStats treeStats =  TreeBuilder.buildGameTree(game.getGameState());
+    Assertions.assertEquals(treeStats.getMaxDepth(),3);
+    Assertions.assertEquals(treeStats.getNumTerminalNodes(),2);
+    Assertions.assertEquals(treeStats.getNumNodes(),7);
+
+  }
+  @Test
+  void testTreeBuilderMaxDepth2() {
+    gameState.setDefaultPlacement();
+    // first
+    game.getGameState().getBoard().getUnit(0, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 0).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 1).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 1).setAccuracy(100);
+    game.getGameState().getBoard().getUnit(1, 1).setCurrentHp(100);
+    // second
+    game.getGameState().getBoard().getUnit(0, 2).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 2).setAccuracy(-100);
+    game.getGameState().getBoard().getUnit(2, 2).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(0, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(2, 3).setCurrentHp(0);
+    game.getGameState().getBoard().getUnit(1, 2).setCurrentHp(10);
+    game.getGameState().getBoard().getUnit(1, 2).setAccuracy(-100);
+
+    TreeBuilder.TreeStats treeStats =  TreeBuilder.buildGameTree(game.getGameState());
+    Assertions.assertEquals(treeStats.getMaxDepth(),0);
+    Assertions.assertEquals(treeStats.getNumTerminalNodes(),1);
+    Assertions.assertEquals(treeStats.getNumNodes(),4);
+
   }
 
   @Test
   void testResultFunction1() {
+    game.getGameState().setDefaultPlacement();
     ResultFunction resultFunction = new ResultFunction();
     gameState.getBoard().getUnit(1, 2).setCurrentHp(0);
     gameState.changeCurrentPlayer();
@@ -65,6 +135,26 @@ public class TreeBuilderTest {
     double b = resultFunction.getUtility(gameState, PlayerType.FIRST_PLAYER);
     Assertions.assertEquals(b, 15);
   }
-
+  @Test
+  void platGameBotsWithPlacement() throws InterruptedException, GameException {
+    game.getGameState().setDefaultPlacement();
+    this.botFirst = new RandomBot();
+    this.botSecond = new RandomBot();
+    for(int i = 0; i < 10; i++) {
+      BotGames botGames = new BotGames(botFirst, botSecond, gameState);
+      PlayerType p = botGames.playBotGames(gameState.getGameStage());
+      System.out.println(p);
+    }
+  }
+  @Test
+  void platGameBotsWithOutPlacement() throws InterruptedException, GameException {
+    this.botFirst = new RandomBot();
+    this.botSecond = new RandomBot();
+    for(int i = 0; i < 10; i++) {
+      BotGames botGames = new BotGames(botFirst, botSecond, gameState);
+      PlayerType p = botGames.playBotGames(gameState.getGameStage());
+      System.out.println(p);
+    }
+  }
 
 }
