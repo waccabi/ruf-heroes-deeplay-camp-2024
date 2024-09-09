@@ -2,16 +2,11 @@ package io.deeplay.camp.botfarm;
 
 import io.deeplay.camp.botfarm.bots.Bot;
 import io.deeplay.camp.botfarm.bots.BotGames;
-import io.deeplay.camp.botfarm.bots.MinMaxBotAB;
 import io.deeplay.camp.botfarm.bots.RandomBot;
 import io.deeplay.camp.botfarm.bots.max_MinMax.ResultFunction;
 import io.deeplay.camp.botfarm.bots.max_MinMax.TreeBuilder;
 import io.deeplay.camp.game.Game;
-import io.deeplay.camp.game.events.ChangePlayerEvent;
-import io.deeplay.camp.game.events.GiveUpEvent;
-import io.deeplay.camp.game.events.MakeMoveEvent;
 import io.deeplay.camp.game.exceptions.GameException;
-import io.deeplay.camp.game.mechanics.GameStage;
 import io.deeplay.camp.game.mechanics.GameState;
 import io.deeplay.camp.game.mechanics.PlayerType;
 import org.junit.jupiter.api.Assertions;
@@ -19,12 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static io.deeplay.camp.botfarm.bots.max_MinMax.TreeBuilder.buildGameTree;
 
 public class TreeBuilderTest {
   Game game;
@@ -142,8 +131,7 @@ public class TreeBuilderTest {
     this.botSecond = new RandomBot();
     for(int i = 0; i < 10; i++) {
       BotGames botGames = new BotGames(botFirst, botSecond, gameState);
-      PlayerType p = botGames.playBotGames(gameState.getGameStage());
-      System.out.println(p);
+
     }
   }
   @Test
@@ -152,8 +140,7 @@ public class TreeBuilderTest {
     this.botSecond = new RandomBot();
     for(int i = 0; i < 10; i++) {
       BotGames botGames = new BotGames(botFirst, botSecond, gameState);
-      PlayerType p = botGames.playBotGames(gameState.getGameStage());
-      System.out.println(p);
+
     }
   }
 

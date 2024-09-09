@@ -9,6 +9,8 @@ import io.deeplay.camp.core.dto.client.party.ExitGamePartyDto;
 import io.deeplay.camp.core.dto.client.party.GetPartiesDto;
 import io.deeplay.camp.core.dto.client.party.JoinGamePartyDto;
 import io.deeplay.camp.game.entities.UnitType;
+import io.deeplay.camp.game.mechanics.PlayerType;
+
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -136,8 +138,14 @@ public class ParserRequest {
     if (userCommand[startIndexRead].equals("creategame")) {
       if (userCommand[startIndexRead + 1].equals("vs_human")) {
         clientDto = new CreateGamePartyDto(GameType.HUMAN_VS_HUMAN);
+      //TODO Тут добавить потом прописывание назаний ботов
       } else if (userCommand[startIndexRead + 1].equals("vs_bot")) {
-        clientDto = new CreateGamePartyDto(GameType.HUMAN_VS_BOT);
+        if(userCommand[startIndexRead + 2].equals("first")) {
+          clientDto = new CreateGamePartyDto(GameType.HUMAN_VS_BOT, PlayerType.FIRST_PLAYER,"random");
+        }
+        else{
+          clientDto = new CreateGamePartyDto(GameType.HUMAN_VS_BOT, PlayerType.SECOND_PLAYER,"random");
+        }
       } else if (userCommand[startIndexRead + 1].equals("bot_vs_bot")) {
         clientDto = new CreateGamePartyDto(GameType.BOT_VS_BOT);
       } else {

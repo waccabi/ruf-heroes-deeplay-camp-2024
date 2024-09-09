@@ -18,7 +18,7 @@ public class BotGames {
     this.gameState = gameState.getCopy();
   }
 
-  public PlayerType playBotGames(GameStage gameStage) throws InterruptedException, GameException {
+  public PlayerType playBotGames() throws InterruptedException, GameException {
     if (gameState.getGameStage() == GameStage.PLACEMENT_STAGE) {
       executePlace();
       gameState.changeCurrentPlayer();

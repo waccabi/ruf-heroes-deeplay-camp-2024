@@ -21,8 +21,6 @@ import io.deeplay.camp.core.dto.server.ConnectionErrorCode;
 import io.deeplay.camp.core.dto.server.GamePartiesDto;
 import io.deeplay.camp.core.dto.server.GamePartyInfoDto;
 import io.deeplay.camp.core.dto.server.OfferDrawServerDto;
-import io.deeplay.camp.game.events.DrawEvent;
-import io.deeplay.camp.core.dto.server.*;
 import io.deeplay.camp.core.dto.server.OfferRestartServerDto;
 import io.deeplay.camp.game.exceptions.GameException;
 import io.deeplay.camp.game.mechanics.PlayerType;
@@ -31,6 +29,8 @@ import io.deeplay.camp.server.exceptions.GameManagerException;
 import io.deeplay.camp.server.exceptions.GamePartyException;
 import io.deeplay.camp.server.player.AiPlayer;
 import io.deeplay.camp.server.player.HumanPlayer;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +65,7 @@ public class GamePartyManager {
         CreateGamePartyDto partyDto = (CreateGamePartyDto) clientDto;
         UUID clientId = partyDto.getClientId();
         GameType gameType = partyDto.getGameType();
-        processCreateGameParty(clientId, gameType);
+        processCreateGameParty(clientId, gameType,partyDto);
       }
       case JOIN_PARTY -> {
         JoinGamePartyDto joinGamePartyDto = (JoinGamePartyDto) clientDto;
@@ -86,12 +86,12 @@ public class GamePartyManager {
    * @param clientId Id клиента, сделавшего запрос.
    * @param gameType Тип игры.
    */
-  public void processCreateGameParty(UUID clientId, GameType gameType) throws GameManagerException {
+  public void processCreateGameParty(UUID clientId, GameType gameType, CreateGamePartyDto partyDto) throws GameManagerException {
     if (gameType == null) {
       throw new GameManagerException(ConnectionErrorCode.UNIDENTIFIED_ERROR);
     }
     switch (gameType) {
-      case HUMAN_VS_BOT -> createHumanVsBotParty(clientId);
+      case HUMAN_VS_BOT -> createHumanVsBotParty(clientId, partyDto);
       case HUMAN_VS_HUMAN -> createHumanVsHumanParty(clientId);
       case BOT_VS_BOT -> createBotVsBotParty(clientId);
       default -> {
@@ -158,19 +158,19 @@ public class GamePartyManager {
    *
    * @param humanPlayerId Id клиента, запросившего создание.
    */
-  private void createHumanVsBotParty(UUID humanPlayerId) throws GameManagerException {
+  private void createHumanVsBotParty(UUID humanPlayerId, CreateGamePartyDto partyDto) throws GameManagerException {
     try {
       GameParty gameParty = new GameParty(UUID.randomUUID());
       gameParties.put(gameParty.getGamePartyId(), gameParty);
+      PlayerType humanPlayerType = partyDto.getPlayer();
       gameParty.addPlayer(
-          new HumanPlayer(randomPlayerType(gameParty.getGamePartyId()), humanPlayerId));
+          new HumanPlayer(humanPlayerType, humanPlayerId));
 
       GamePartyInfoDto gamePartyInfoDto =
           new GamePartyInfoDto(
               gameParty.getGamePartyId(), gameParty.getPlayers().getPlayerTypeById(humanPlayerId));
       sendGamePartyInfo(humanPlayerId, gamePartyInfoDto);
-      logger.info("");
-      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty));
+      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty,partyDto));
     } catch (GameManagerException e) {
       logger.error(
           "Ошибка при создании игры между игроком и ботом {} ", e.getConnectionErrorCode());
@@ -191,8 +191,8 @@ public class GamePartyManager {
     try {
       GameParty gameParty = new GameParty(UUID.randomUUID());
       gameParties.put(gameParty.getGamePartyId(), gameParty);
-      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty));
-      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty));
+      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty,null));
+      gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty,null));
       logger.info("");
     } catch (GameManagerException e) {
       logger.error(
@@ -243,14 +243,14 @@ public class GamePartyManager {
     try {
       GameParty gameParty = gameParties.get(gamePartyId);
       OfferDrawServerDto offerGiveUpServerDto = new OfferDrawServerDto(gameParty.getGamePartyId());
-      if (gameParty.getPlayers().getHashMap().get(PlayerType.SECOND_PLAYER) instanceof AiPlayer) {
+/*      if (gameParty.getPlayers().getHashMap().get(PlayerType.SECOND_PLAYER) instanceof AiPlayer) {
         DrawEvent drawEvent =
             ((AiPlayer) gameParty.getPlayers().getHashMap().get(PlayerType.SECOND_PLAYER))
                 .getBot()
                 .generateDrawEvent(gameParty.getGame().getGameState());
         logger.info(" Результаты передаваемые AI player {}", drawEvent.getDraw());
         gameParty.processDraw(drawEvent.getDraw());
-      } else {
+      } else {*/
         if (gameParty.getPlayers().getPlayerTypeById(clientId) == PlayerType.FIRST_PLAYER) {
           message = JsonConverter.serialize(offerGiveUpServerDto);
           logger.info("Предложение ничьи для 2 игрока");
@@ -266,7 +266,7 @@ public class GamePartyManager {
               .sendMessage(
                   gameParty.getPlayers().getPlayerByPlayerType(PlayerType.FIRST_PLAYER), message);
         }
-      }
+      //}
     } catch (JsonProcessingException e) {
       throw new GameManagerException(ConnectionErrorCode.SERIALIZABLE_ERROR);
     }
@@ -311,7 +311,7 @@ public class GamePartyManager {
     }
   }
 
-  public void acceptRestart(UUID gamePartyId, UUID clientId) throws GameManagerException, GamePartyException {
+  public void acceptRestart(UUID gamePartyId, UUID clientId) throws GameManagerException, GamePartyException, IOException {
       GameParty gameParty = gameParties.get(gamePartyId);
       if (gameParty.getPlayers().getPlayerTypeById(clientId) == PlayerType.FIRST_PLAYER) {
         logger.info("Подтверждение рестарта первым игроком");
@@ -322,7 +322,7 @@ public class GamePartyManager {
 
           gameParty.addPlayer(
                   new HumanPlayer(randomPlayerType(gameParty.getGamePartyId()), clientId));
-          gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty));
+          gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty, null));
 
           gameParty.processRestart(gameParty.getRestart());
 
@@ -363,7 +363,7 @@ public class GamePartyManager {
 
           gameParty.addPlayer(
                   new HumanPlayer(randomPlayerType(gameParty.getGamePartyId()), clientId));
-          gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty));
+          gameParty.addPlayer(new AiPlayer(randomPlayerType(gameParty.getGamePartyId()), gameParty, null));
 
           gameParty.processRestart(gameParty.getRestart());
 
@@ -439,7 +439,7 @@ public class GamePartyManager {
    * @param clientDto Запрос с действием.
    * @throws GameException Если действие некорректно.
    */
-  public void processGameAction(ClientDto clientDto) throws GameManagerException, GamePartyException {
+  public void processGameAction(ClientDto clientDto) throws GameManagerException, GamePartyException, IOException {
     switch (clientDto.getClientDtoType()) {
       case MAKE_MOVE -> {
         MakeMoveDto makeMoveDto = (MakeMoveDto) clientDto;

@@ -2,6 +2,7 @@ package io.deeplay.camp.core.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.deeplay.camp.core.dto.client.connection.DisconnectDto;
 import io.deeplay.camp.core.dto.client.game.*;
 import io.deeplay.camp.core.dto.client.party.CreateGamePartyDto;
@@ -15,6 +16,7 @@ import lombok.Setter;
 
 @NoArgsConstructor
 @Getter
+@JsonTypeName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "clientDtoType")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = MakeMoveDto.class),

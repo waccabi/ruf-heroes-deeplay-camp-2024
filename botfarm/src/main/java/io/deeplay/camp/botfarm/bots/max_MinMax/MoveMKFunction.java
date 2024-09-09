@@ -6,7 +6,7 @@ import io.deeplay.camp.game.exceptions.GameException;
 import io.deeplay.camp.game.mechanics.GameState;
 import io.deeplay.camp.game.mechanics.PlayerType;
 
-public class MKFunction implements UtilityFunction{
+public class MoveMKFunction implements UtilityFunction{
 
     @Override
     public double getUtility(GameState gameState, PlayerType playerType) throws InterruptedException, GameException {
@@ -15,7 +15,7 @@ public class MKFunction implements UtilityFunction{
 
         for(int i = 0; i < totalGames; i++) {
             BotGames botGames = new BotGames(new RandomBot(),new RandomBot(),gameState);
-            PlayerType winer = botGames.playBotGames(gameState.getGameStage());
+            PlayerType winer = botGames.playBotGames();
             if (winer == playerType){
                 playersWin++;
             }

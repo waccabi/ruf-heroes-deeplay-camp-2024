@@ -2,11 +2,13 @@ package io.deeplay.camp.core.dto.server;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
+@JsonTypeName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "serverDtoType")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = OfferRestartServerDto.class),
